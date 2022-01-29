@@ -11,7 +11,7 @@ pub fn listen<A: std::net::ToSocketAddrs>(address: A) -> std::io::Result<()> {
         stream.read_exact(protocol)?;
         stream.write(&match protocol[0] {
             71 => { get_http(address) } //71 represents ASCII letter G which is sent from an HTTP GET request
-            _ => { return Err(std::io::Error::new(std::io::ErrorKind::InvalidData, concat!("bad protocol: must be ", env!("CARGO_PKG_NAME"), "or HTTP GET"))); }
+            _ => { return Err(std::io::Error::new(std::io::ErrorKind::InvalidData, concat!("bad protocol: must be ", env!("CARGO_PKG_NAME"), " or HTTP GET"))); }
         })?;
     }
     Ok(())

@@ -6,8 +6,8 @@
 <script>
 console.log('gello')
 let request = new XMLHttpRequest();
-request.open("GET", "http://localhost:8080");
-request.send();
+request.open("POST", "http://localhost:8080");
+request.send("ghello");
 request.addEventListener('load', (e) => {
     console.log(e);
 })
