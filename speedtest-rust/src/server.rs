@@ -12,7 +12,7 @@ pub fn listen<A: std::net::ToSocketAddrs>(address: A) -> std::io::Result<()> {
     Ok(())
 }
 
-fn handle(stream: std::io::Result<std::io::TcpStream>) -> std::io::Result<()> {
+fn handle(stream: std::io::Result<std::net::TcpStream>) -> std::io::Result<()> {
     let mut stream = stream?;
     let address = stream.peer_addr().unwrap().ip();
     println!("{}", address);
