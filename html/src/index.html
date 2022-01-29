@@ -1,6 +1,11 @@
 <html>
 <head>
     <title>speedtest</title>
+    <style>
+input[type="range"] {
+    width: 100%;
+}
+    </style>
 </head>
 <body>
 <label>
@@ -8,17 +13,21 @@
     <input type="number" id="payloadnumber">
     <input type="button" id="uploadbutton" value="Upload">
     <input type="button" id="downloadbbutton" value="Download">
+    <input type="button" id="abortButton" value="Abort">
 </label>
 <p id="speed">3456</p>
 <script>
-let size=0;
-
-let payloadRange = document.getElementById("payloadrange");
-let payloadNumber = document.getElementById("payloadnumber");
-let uploadButton = document.getElementById("uploadbutton");
-let downloadButton = document.getElementById("downloadbbutton");
+const payloadRange = document.getElementById("payloadrange");
+const payloadNumber = document.getElementById("payloadnumber");
+const uploadButton = document.getElementById("uploadbutton");
+const downloadButton = document.getElementById("downloadbbutton");
+const abortButton = document.getElementById("abortButton");
 payloadRange.addEventListener("input", e => update(e));
 payloadNumber.addEventListener("input", e => update(e));
+
+let size = 0;
+let request = null;
+
 function update(e) {
     if (e) { size = parseInt(e.target.value); }
     payloadRange.value = size;
@@ -26,9 +35,14 @@ function update(e) {
 }
 update();
 
+function abort() {
+    if (request != null) { request.abort(); request = null; }
+}
+abortButton.addEventListener("click", () => abort());
 
 function upload(size) {
-    let request = new XMLHttpRequest();
+    abort();
+    request = new XMLHttpRequest();
     request.open("POST", "http://localhost:8080");
     let buffer = new ArrayBuffer(size);
     request.send(buffer);
@@ -42,7 +56,8 @@ function upload(size) {
 uploadButton.addEventListener("click", () => upload(size));
 
 function download(size) {
-    let request = new XMLHttpRequest();
+    abort();
+    request = new XMLHttpRequest();
     request.open("GET", "http://localhost:8080/" + size);
     request.send();
     request.addEventListener("load", (e) => {
