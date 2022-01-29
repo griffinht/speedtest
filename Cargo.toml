@@ -1,0 +1,24 @@
+[package]
+name = "speedtest-rust"
+version = "0.1.0"
+authors = ["stzups"]
+license = "Unlicense"
+description = "simple speedtest client and server, works with http"
+readme = "README.md"
+homepage = "https://github.com/stzups/speedtest"
+repository = "https://github.com/stzups/speedtest"
+keywords = ["cli", "ip", "server", "http"]
+categories = ["command-line-utilities"]
+edition = "2021"
+include = [
+    "Cargo.toml",
+    "src",
+    "README.md"
+]
+
+[[bin]]
+name = "speedtest"
+path = "src/main.rs"
+
+[dependencies]
+getopts = "0.2.21"

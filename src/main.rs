@@ -1,0 +1,34 @@
+mod options;
+mod server;
+mod client;
+
+#[macro_export]
+macro_rules! default_bind_address {
+    () => ("0.0.0.0:8080")
+}
+
+fn main() {
+    match _main() {
+        Ok(_) => {},
+        Err(code) => std::process::exit(code)
+    }
+}
+
+fn _main() -> Result<(), i32> {
+    let matches = options::matches(std::env::args().collect())?;
+
+    match if matches.opt_present("client") {
+        client::connect(matches.opt_get::<String>("client").unwrap().unwrap())
+    } else {
+        server::listen(
+            if matches.opt_present("server") {
+                matches.opt_get::<String>("server").unwrap().ok_or(1)?
+            } else {
+                default_bind_address!()
+            }
+        )
+    } {
+        Ok(()) => Ok(()),
+        Err(error) => { eprintln!("{}", error); Err(2) }
+    }
+}
