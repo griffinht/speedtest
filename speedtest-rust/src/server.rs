@@ -1,4 +1,4 @@
-use std::io::{BufRead, Write};
+use std::io::{BufRead, Read, Write};
 
 pub fn listen<A: std::net::ToSocketAddrs>(address: A) -> std::io::Result<()> {
     let listener = std::net::TcpListener::bind(address)?;
@@ -65,9 +65,16 @@ fn handle(stream: std::io::Result<std::net::TcpStream>) -> std::io::Result<()> {
                 let length = header.chars().skip(16).collect::<String>();
                 let length = match length.parse::<u32>() {
                     Ok(length) => length,
-                    Err(e) => { return Err(std::io::Error::new(std::io::ErrorKind::InvalidData, format!("error parsing {} as u32 while parsing content-length", length)))}
+                    Err(_) => { return Err(std::io::Error::new(std::io::ErrorKind::InvalidData, format!("error parsing {} as u32 while parsing content-length", length)))}
                 };
-                eprintln!("{}", length);
+                let mut read = 0;
+                while read < length {
+                    let mut buffer = [0u8; 1024];
+                    let _read = reader.read(&mut buffer)?;
+                    if _read == 0 { break; }
+                    read = read + _read as u32;
+                }
+                eprintln!("{} {}", length, read);
                 break
             }
             writer.write(b"HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: 0\r\n\r\n")?;
