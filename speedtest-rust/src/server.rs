@@ -20,7 +20,7 @@ fn handle(stream: std::io::Result<std::net::TcpStream>) -> std::io::Result<()> {
     let mut reader = std::io::BufReader::new(stream.try_clone()?);
     let mut writer = std::io::BufWriter::new(stream.try_clone()?);
     reader.read_until(b' ', &mut protocol)?;
-    let protocol = match protocol.as_slice() {
+    let protocol = match &protocol[0..protocol.len() - 1] {
         b"GET" => "GET",
         b"POST" => "POST",
         _ => {
