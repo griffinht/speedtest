@@ -31,6 +31,16 @@ fn handle(stream: std::io::Result<std::net::TcpStream>) -> std::io::Result<()> {
     reader.read_until(b'\r', &mut version)?;
     reader.read_until(b'\n', &mut version)?;
     let version = &version[0..version.len() - 2];
+    let mut headers = Vec::new();
+    loop {
+        let mut header = Vec::new();
+        let read = reader.read_until(b'\r', &mut header)? + reader.read_until(b'\n', &mut header)?;
+        if read < 2 { return Err(std::io::Error::new(std::io::ErrorKind::InvalidData, "missing newline while parsing header")); }
+        let header = &header[0..header.len() - read];
+        if header == b"\r\n" { break }
+        headers.push(from_utf8(header)?.to_lowercase())
+    }
+
 
     eprintln!("{} {} {}", from_utf8(protocol)?, target, from_utf8(version)?);
     match protocol {
