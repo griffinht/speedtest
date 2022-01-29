@@ -61,7 +61,7 @@ fn handle(stream: std::io::Result<std::net::TcpStream>) -> std::io::Result<()> {
     match protocol {
         b"GET" => {
             let length = parse::<u64>(target.chars().skip(1).collect::<String>())?;
-            writer.write(b"HTTP/1.1 200 OK\r\nContent-Length: ")?;
+            writer.write(b"HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\nContent-Type: application/octet-stream\r\nContent-Length: ")?;
             writer.write(length.to_string().as_bytes())?;
             writer.write(b"\r\n\r\n")?;
             let mut write = 0;

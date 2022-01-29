@@ -5,13 +5,29 @@
 <body>
 <script>
 console.log('gello')
-let request = new XMLHttpRequest();
-request.open("POST", "http://localhost:8080");
-let buffer = new ArrayBuffer(4000);
-request.send(buffer);
-request.addEventListener('load', (e) => {
-    console.log(e);
-})
+function upload(size) {
+    let request = new XMLHttpRequest();
+    request.open("POST", "http://localhost:8080");
+    let buffer = new ArrayBuffer(size);
+    request.send(buffer);
+    request.addEventListener("load", (e) => {
+        console.log(e);
+    });
+    request.addEventListener("progress", (e) => {
+        console.log(e);
+    });
+}
+function download(size) {
+    let request = new XMLHttpRequest();
+    request.open("GET", "http://localhost:8080/" + size);
+    request.send();
+    request.addEventListener("load", (e) => {
+        console.log(e);
+    });
+    request.addEventListener("progress", (e) => {
+        console.log(e);
+    })
+}
 </script>
 </body>
 </html>
