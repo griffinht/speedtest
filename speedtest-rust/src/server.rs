@@ -21,6 +21,12 @@ fn read_until_exact<T: BufRead>(mut reader: T, byte: u8, buffer: &mut Vec<u8>) -
     }
 }
 
+fn parse<T>(string: String) -> std::io::Result<T> {
+    match string.parse::<T>() {
+        Ok(length) => Ok(length),
+        Err(_) => { Err(std::io::Error::new(std::io::ErrorKind::InvalidData, format!("error parsing {}", parse)))}
+    }
+}
 fn handle(stream: std::io::Result<std::net::TcpStream>) -> std::io::Result<()> {
     let stream = stream?;
     let address = stream.peer_addr().unwrap().ip();
@@ -54,11 +60,7 @@ fn handle(stream: std::io::Result<std::net::TcpStream>) -> std::io::Result<()> {
     eprintln!("{} {} {}", from_utf8(protocol)?, target, from_utf8(version)?);
     match protocol {
         b"GET" => {
-            let length = target.chars().skip(1).collect::<String>();
-            let length = match length.parse::<u64>() {
-                Ok(length) => length,
-                Err(_) => { return Err(std::io::Error::new(std::io::ErrorKind::InvalidData, format!("error parsing {} as u32 while parsing content-length", length)))}
-            };
+            let length = parse::<u64>(target.chars().skip(1).collect::<String>())?;
             writer.write(b"HTTP/1.1 200 OK\r\nContent-Length: ")?;
             writer.write(length.to_string().as_bytes())?;
             writer.write(b"\r\n\r\n")?;
@@ -75,11 +77,7 @@ fn handle(stream: std::io::Result<std::net::TcpStream>) -> std::io::Result<()> {
             for header in headers {
                 if !header.starts_with("content-length: ") { continue }
 
-                let length = header.chars().skip(16).collect::<String>();
-                let length = match length.parse::<u64>() {
-                    Ok(length) => length,
-                    Err(_) => { return Err(std::io::Error::new(std::io::ErrorKind::InvalidData, format!("error parsing {} as u32 while parsing content-length", length)))}
-                };
+                let length = parse(header.chars().skip(16).collect::<String>())?;
                 let mut read = 0;
                 while read < length {
                     let mut buffer = [0u8; 1024];
