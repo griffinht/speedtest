@@ -40,7 +40,7 @@ fn handle(stream: std::io::Result<std::net::TcpStream>) -> std::io::Result<()> {
             writer.write(b"\r\n\r\n")?;
         },
         b"POST" => {
-            writer.write(b"HTTP/1.1 200 OK\r\n\r\n")?;
+            writer.write(b"HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: 0\r\n\r\n")?;
         },
         _ => {
             writer.write(b"HTTP/1.1 405 Method Not Allowed\r\n\r\n")?;
