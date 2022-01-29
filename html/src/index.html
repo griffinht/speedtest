@@ -7,7 +7,8 @@
 console.log('gello')
 let request = new XMLHttpRequest();
 request.open("POST", "http://localhost:8080");
-request.send("ghello");
+let buffer = new ArrayBuffer(4000);
+request.send(buffer);
 request.addEventListener('load', (e) => {
     console.log(e);
 })

@@ -30,7 +30,7 @@ fn handle(stream: std::io::Result<std::net::TcpStream>) -> std::io::Result<()> {
     let mut version = Vec::new();
     reader.read_until(b'\r', &mut version)?;
     reader.read_until(b'\n', &mut version)?;
-    let version = &version[0..version.len() - 1];
+    let version = &version[0..version.len() - 2];
 
     eprintln!("{} {} {}", from_utf8(protocol)?, target, from_utf8(version)?);
     match protocol {
@@ -40,6 +40,7 @@ fn handle(stream: std::io::Result<std::net::TcpStream>) -> std::io::Result<()> {
             writer.write(b"\r\n\r\n")?;
         },
         b"POST" => {
+
             writer.write(b"HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: 0\r\n\r\n")?;
         },
         _ => {
