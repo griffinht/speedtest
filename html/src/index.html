@@ -9,18 +9,23 @@ input[type="range"] {
 </head>
 <body>
 <label>
-    <input type="range" id="payloadrange" min="0" max="999999999" value="100000">
-    <input type="number" id="payloadnumber">
-    <input type="button" id="uploadbutton" value="Upload">
-    <input type="button" id="downloadbbutton" value="Download">
+    <input type="range" id="payloadRange" min="0" max="999999999" value="100000">
+    <input type="number" id="payloadNumber">
+    <input type="button" id="uploadButton" value="Upload">
+    <input type="button" id="downloadButton" value="Download">
     <input type="button" id="abortButton" value="Abort">
 </label>
-<p id="speed">3456</p>
+<section>
+    <div id="progress">
+        <div id="progressbar"></div>
+    </div>
+    <p id="speed">3456</p>
+</section>
 <script>
-const payloadRange = document.getElementById("payloadrange");
-const payloadNumber = document.getElementById("payloadnumber");
-const uploadButton = document.getElementById("uploadbutton");
-const downloadButton = document.getElementById("downloadbbutton");
+const payloadRange = document.getElementById("payloadRange");
+const payloadNumber = document.getElementById("payloadNumber");
+const uploadButton = document.getElementById("uploadButton");
+const downloadButton = document.getElementById("downloadButton");
 const abortButton = document.getElementById("abortButton");
 payloadRange.addEventListener("input", e => update(e));
 payloadNumber.addEventListener("input", e => update(e));
@@ -63,9 +68,7 @@ function download(size) {
     request.addEventListener("load", (e) => {
         console.log(e);
     });
-    request.addEventListener("progress", (e) => {
-        console.log(e);
-    })
+    request.addEventListener("progress", (e) => progress(e));
 }
 downloadButton.addEventListener("click", () => download(size));
 </script>
