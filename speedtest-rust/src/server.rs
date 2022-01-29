@@ -19,8 +19,12 @@ fn handle(stream: std::io::Result<std::net::TcpStream>) -> std::io::Result<()> {
     let protocol = &mut [0u8; 1];
     stream.read_exact(protocol)?;
     stream.write(&match protocol[0] {
-        71 => { get_http(address) } //71 represents ASCII letter G which is sent from an HTTP GET request
-        _ => { return Err(std::io::Error::new(std::io::ErrorKind::InvalidData, format!("bad protocol: must be {} or HTTP GET", env!("CARGO_PKG_NAME")))) }
+        b'G' => { get_http(address) } // GET
+        b'P' => { get_http(address) } // POST
+        _ => {
+            eprintln!("bad protocol: must be {} or HTTP GET or POST", env!("CARGO_PKG_NAME"));
+            b"HTTP/1.1 405 Method Not Allowed\r\n\r\n".to_vec()
+        }
     })?;
     Ok(())
 }
@@ -38,7 +42,7 @@ fn get_http(address: std::net::IpAddr) -> Vec<u8> {
         }
     }.as_bytes());
 
-    headers.extend_from_slice("HTTP/1.1 200 OK\r\nContent-Type: text/plain;\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: ".as_bytes());
+    headers.extend_from_slice(b"HTTP/1.1 200 OK\r\nContent-Type: text/plain;\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: ");
     headers.extend_from_slice(body.len().to_string().as_bytes());
     headers.extend_from_slice("\r\n\r\n".as_bytes());
 
