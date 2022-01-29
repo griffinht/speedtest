@@ -24,7 +24,7 @@ fn _main() -> Result<(), i32> {
             if matches.opt_present("server") {
                 matches.opt_get::<String>("server").unwrap().ok_or(1)?
             } else {
-                default_bind_address!()
+                default_bind_address!().to_string()
             }
         )
     } {

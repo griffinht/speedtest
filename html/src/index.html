@@ -1,0 +1,16 @@
+<html>
+<head>
+    <title>speedtest</title>
+</head>
+<body>
+<script>
+console.log('gello')
+let request = new XMLHttpRequest();
+request.open("GET", "http://localhost:8080");
+request.send();
+request.addEventListener('load', (e) => {
+    console.log(e);
+})
+</script>
+</body>
+</html>

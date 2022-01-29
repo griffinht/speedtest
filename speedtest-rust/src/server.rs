@@ -30,7 +30,7 @@ fn get_http(address: std::net::IpAddr) -> Vec<u8> {
         }
     }.as_bytes());
 
-    headers.extend_from_slice("HTTP/1.1 200 OK\r\nContent-Type: text/plain;\r\nContent-Length: ".as_bytes());
+    headers.extend_from_slice("HTTP/1.1 200 OK\r\nContent-Type: text/plain;\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: ".as_bytes());
     headers.extend_from_slice(body.len().to_string().as_bytes());
     headers.extend_from_slice("\r\n\r\n".as_bytes());
 
