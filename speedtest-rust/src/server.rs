@@ -59,6 +59,9 @@ fn handle(stream: std::io::Result<std::net::TcpStream>) -> std::io::Result<()> {
 
     eprintln!("{} {} {}", from_utf8(protocol)?, target, from_utf8(version)?);
     match protocol {
+        b"OPTIONS" => {
+            writer.write(b"HTTP/1.1 204 No Content\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Headers: *\r\nAccess-Control-Allow-Methods: POST, GET\r\n\r\n")?;
+        }
         b"GET" => {
             let length = parse::<u64>(target.chars().skip(1).collect::<String>())?;
             writer.write(b"HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\nContent-Type: application/octet-stream\r\nContent-Length: ")?;
