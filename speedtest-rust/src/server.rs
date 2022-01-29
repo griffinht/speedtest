@@ -22,7 +22,7 @@ fn handle(stream: std::io::Result<std::net::TcpStream>) -> std::io::Result<()> {
         b'G' => { stream.write(&get_http(address)) } // GET
         b'P' => { stream.write(&get_http(address)) } // POST
         _ => {
-            eprintln!("bad protocol: must be {} or HTTP GET or POST", env!("CARGO_PKG_NAME"));
+            eprintln!("method not allowed: must be GET or POST");
             stream.write(b"HTTP/1.1 405 Method Not Allowed\r\n\r\n")
         }
     }?;
