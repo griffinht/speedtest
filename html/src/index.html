@@ -3,12 +3,31 @@
     <title>speedtest</title>
 </head>
 <body>
+<label>
+    <input type="range" id="payloadrange" min="0" max="999999999" value="100000">
+    <input type="number" id="payloadnumber">
+    <input type="button" id="uploadbutton" value="Upload">
+    <input type="button" id="downloadbbutton" value="Download">
+</label>
+<p id="speed">3456</p>
 <script>
-console.log('gello')
-function upload(size) {
+let payload=0
+
+let payloadRange = document.getElementById("payloadrange");
+let payloadNumber = document.getElementById("payloadnumber");
+let uploadButton = document.getElementById("uploadbutton");
+let downloadButton = document.getElementById("downloadbbutton");
+payloadRange.addEventListener("change", update);
+payloadNumber.addEventListener("change", update);
+function update() {
+    console.log(this.value);
+}
+
+uploadButton.addEventListener("click", upload);
+function upload() {
     let request = new XMLHttpRequest();
     request.open("POST", "http://localhost:8080");
-    let buffer = new ArrayBuffer(size);
+    let buffer = new ArrayBuffer(payload);
     request.send(buffer);
     request.addEventListener("load", (e) => {
         console.log(e);
@@ -17,9 +36,11 @@ function upload(size) {
         console.log(e);
     });
 }
-function download(size) {
+
+downloadButton.addEventListener("click", download);
+function download() {
     let request = new XMLHttpRequest();
-    request.open("GET", "http://localhost:8080/" + size);
+    request.open("GET", "http://localhost:8080/" + payload);
     request.send();
     request.addEventListener("load", (e) => {
         console.log(e);
