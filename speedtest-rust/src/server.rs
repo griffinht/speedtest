@@ -18,14 +18,14 @@ fn handle(stream: std::io::Result<std::net::TcpStream>) -> std::io::Result<()> {
     println!("{}", address);
     let protocol = &mut [0u8; 1];
     stream.read_exact(protocol)?;
-    stream.write(&match protocol[0] {
-        b'G' => { get_http(address) } // GET
-        b'P' => { get_http(address) } // POST
+    match protocol[0] {
+        b'G' => { stream.write(&get_http(address)) } // GET
+        b'P' => { stream.write(&get_http(address)) } // POST
         _ => {
             eprintln!("bad protocol: must be {} or HTTP GET or POST", env!("CARGO_PKG_NAME"));
-            b"HTTP/1.1 405 Method Not Allowed\r\n\r\n".to_vec()
+            stream.write(b"HTTP/1.1 405 Method Not Allowed\r\n\r\n")
         }
-    })?;
+    }?;
     Ok(())
 }
 
@@ -44,7 +44,7 @@ fn get_http(address: std::net::IpAddr) -> Vec<u8> {
 
     headers.extend_from_slice(b"HTTP/1.1 200 OK\r\nContent-Type: text/plain;\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: ");
     headers.extend_from_slice(body.len().to_string().as_bytes());
-    headers.extend_from_slice("\r\n\r\n".as_bytes());
+    headers.extend_from_slice(b"\r\n\r\n");
 
     let mut response = headers;
     response.extend_from_slice(&body);
