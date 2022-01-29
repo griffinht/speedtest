@@ -54,9 +54,19 @@ fn handle(stream: std::io::Result<std::net::TcpStream>) -> std::io::Result<()> {
     eprintln!("{} {} {}", from_utf8(protocol)?, target, from_utf8(version)?);
     match protocol {
         b"GET" => {
+
+            let length = 0;
             writer.write(b"HTTP/1.1 200 OK\r\nContent-Length: ")?;
-            writer.write(0.to_string().as_bytes())?;
+            writer.write(length.to_string().as_bytes())?;
             writer.write(b"\r\n\r\n")?;
+            let mut write = 0;
+            while write < length {
+                let mut buffer = [0u8; 1024];
+                let _write = writer.write(&mut buffer)?;
+                if _write == 0 { break; }
+                write = write + _write as u32;
+            }
+            eprintln!("wrote {}/{}", write, length);
         },
         b"POST" => {
             for header in headers {
@@ -74,7 +84,7 @@ fn handle(stream: std::io::Result<std::net::TcpStream>) -> std::io::Result<()> {
                     if _read == 0 { break; }
                     read = read + _read as u32;
                 }
-                eprintln!("{} {}", length, read);
+                eprintln!("read {}/{}", read, length);
                 break
             }
             writer.write(b"HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: 0\r\n\r\n")?;
