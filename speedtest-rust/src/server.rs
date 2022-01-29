@@ -40,14 +40,14 @@ fn handle(stream: std::io::Result<std::net::TcpStream>) -> std::io::Result<()> {
     read_until_exact(&mut reader, b'\r', &mut version)?;
     read_until_exact(&mut reader, b'\n', &mut version)?;
     let version = &version[0..version.len() - 2];
+
     let mut headers = Vec::new();
     loop {
         let mut header = Vec::new();
         read_until_exact(&mut reader, b'\r', &mut header)?;
         read_until_exact(&mut reader, b'\n', &mut header)?;
-        let header = &header[0..header.len() - 2];
-        eprintln!("{} {}", from_utf8(header)?.to_lowercase(), header == b"\r\n");
         if header == b"\r\n" { break }
+        let header = &header[0..header.len() - 2];
         headers.push(from_utf8(header)?.to_lowercase())
     }
 
@@ -62,7 +62,7 @@ fn handle(stream: std::io::Result<std::net::TcpStream>) -> std::io::Result<()> {
             for header in headers {
                 if !header.starts_with("content-length: ") { continue }
 
-                let length: String = header.chars().skip(4).collect();
+                let length: String = header.chars().skip(16).collect();
                 eprintln!("{}", length);
                 break
             }
