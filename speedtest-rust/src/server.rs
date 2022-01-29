@@ -21,10 +21,10 @@ fn read_until_exact<T: BufRead>(mut reader: T, byte: u8, buffer: &mut Vec<u8>) -
     }
 }
 
-fn parse<T>(string: String) -> std::io::Result<T> {
+fn parse<T: std::str::FromStr>(string: String) -> std::io::Result<T> {
     match string.parse::<T>() {
         Ok(length) => Ok(length),
-        Err(_) => { Err(std::io::Error::new(std::io::ErrorKind::InvalidData, format!("error parsing {}", parse)))}
+        Err(_) => { Err(std::io::Error::new(std::io::ErrorKind::InvalidData, format!("error parsing {}", string)))}
     }
 }
 fn handle(stream: std::io::Result<std::net::TcpStream>) -> std::io::Result<()> {
