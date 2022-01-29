@@ -54,8 +54,11 @@ fn handle(stream: std::io::Result<std::net::TcpStream>) -> std::io::Result<()> {
     eprintln!("{} {} {}", from_utf8(protocol)?, target, from_utf8(version)?);
     match protocol {
         b"GET" => {
-
-            let length = 0;
+            let length = target.chars().skip(1).collect::<String>();
+            let length = match length.parse::<u64>() {
+                Ok(length) => length,
+                Err(_) => { return Err(std::io::Error::new(std::io::ErrorKind::InvalidData, format!("error parsing {} as u32 while parsing content-length", length)))}
+            };
             writer.write(b"HTTP/1.1 200 OK\r\nContent-Length: ")?;
             writer.write(length.to_string().as_bytes())?;
             writer.write(b"\r\n\r\n")?;
@@ -64,7 +67,7 @@ fn handle(stream: std::io::Result<std::net::TcpStream>) -> std::io::Result<()> {
                 let mut buffer = [0u8; 1024];
                 let _write = writer.write(&mut buffer)?;
                 if _write == 0 { break; }
-                write = write + _write as u32;
+                write = write + _write as u64;
             }
             eprintln!("wrote {}/{}", write, length);
         },
@@ -73,7 +76,7 @@ fn handle(stream: std::io::Result<std::net::TcpStream>) -> std::io::Result<()> {
                 if !header.starts_with("content-length: ") { continue }
 
                 let length = header.chars().skip(16).collect::<String>();
-                let length = match length.parse::<u32>() {
+                let length = match length.parse::<u64>() {
                     Ok(length) => length,
                     Err(_) => { return Err(std::io::Error::new(std::io::ErrorKind::InvalidData, format!("error parsing {} as u32 while parsing content-length", length)))}
                 };
@@ -82,7 +85,7 @@ fn handle(stream: std::io::Result<std::net::TcpStream>) -> std::io::Result<()> {
                     let mut buffer = [0u8; 1024];
                     let _read = reader.read(&mut buffer)?;
                     if _read == 0 { break; }
-                    read = read + _read as u32;
+                    read = read + _read as u64;
                 }
                 eprintln!("read {}/{}", read, length);
                 break
