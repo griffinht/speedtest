@@ -11,23 +11,26 @@
 </label>
 <p id="speed">3456</p>
 <script>
-let payload=0
+let size=0;
 
 let payloadRange = document.getElementById("payloadrange");
 let payloadNumber = document.getElementById("payloadnumber");
 let uploadButton = document.getElementById("uploadbutton");
 let downloadButton = document.getElementById("downloadbbutton");
-payloadRange.addEventListener("change", update);
-payloadNumber.addEventListener("change", update);
-function update() {
-    console.log(this.value);
+payloadRange.addEventListener("input", e => update(e));
+payloadNumber.addEventListener("input", e => update(e));
+function update(e) {
+    if (e) { size = parseInt(e.target.value); }
+    payloadRange.value = size;
+    payloadNumber.value = size;
 }
+update();
 
-uploadButton.addEventListener("click", upload);
-function upload() {
+
+function upload(size) {
     let request = new XMLHttpRequest();
     request.open("POST", "http://localhost:8080");
-    let buffer = new ArrayBuffer(payload);
+    let buffer = new ArrayBuffer(size);
     request.send(buffer);
     request.addEventListener("load", (e) => {
         console.log(e);
@@ -36,11 +39,11 @@ function upload() {
         console.log(e);
     });
 }
+uploadButton.addEventListener("click", () => upload(size));
 
-downloadButton.addEventListener("click", download);
-function download() {
+function download(size) {
     let request = new XMLHttpRequest();
-    request.open("GET", "http://localhost:8080/" + payload);
+    request.open("GET", "http://localhost:8080/" + size);
     request.send();
     request.addEventListener("load", (e) => {
         console.log(e);
@@ -49,6 +52,7 @@ function download() {
         console.log(e);
     })
 }
+downloadButton.addEventListener("click", () => download(size));
 </script>
 </body>
 </html>
