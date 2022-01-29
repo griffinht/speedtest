@@ -62,7 +62,11 @@ fn handle(stream: std::io::Result<std::net::TcpStream>) -> std::io::Result<()> {
             for header in headers {
                 if !header.starts_with("content-length: ") { continue }
 
-                let length: String = header.chars().skip(16).collect();
+                let length = header.chars().skip(16).collect::<String>();
+                let length = match length.parse::<u32>() {
+                    Ok(length) => length,
+                    Err(e) => { return Err(std::io::Error::new(std::io::ErrorKind::InvalidData, format!("error parsing {} as u32 while parsing content-length", length)))}
+                };
                 eprintln!("{}", length);
                 break
             }
