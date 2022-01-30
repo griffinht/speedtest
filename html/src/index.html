@@ -49,6 +49,7 @@ const progressBar = document.getElementById("progressBar");
 const speedOutput = document.getElementById("speedOutput");
 const speedOutput2 = document.getElementById("speedOutput2");
 
+let server = "http://localhost:8080";
 let size = 20000000;
 let count = 3;
 
@@ -108,12 +109,12 @@ function queue(upload, size, transfer) {
         loaded = e.loaded;
     }
     if (upload) {
-        request.open("POST", "http://localhost:8080");
+        request.open("POST", server);
         request.upload.addEventListener("progress", (e) => progress(e));
         let buffer = new ArrayBuffer(size);
         request.send(buffer);
     } else {
-        request.open("GET", "http://localhost:8080/" + size);
+        request.open("GET", server + "/" + size);
         request.addEventListener("progress", (e) => progress(e));
         request.send();
     }
