@@ -49,9 +49,8 @@ const progressBar = document.getElementById("progressBar");
 const speedOutput = document.getElementById("speedOutput");
 const speedOutput2 = document.getElementById("speedOutput2");
 
-let size = 0;
-let count = 1;
-let request = null;
+let size = 20000000;
+let count = 3;
 
 function updateSize(e) {
     if (e) { size = parseInt(e.target.value); }
@@ -68,7 +67,7 @@ function updateCount(e) {
 updateCount();
 
 function abort() {
-    if (request != null) { request.abort(); request = null; }
+
 }
 abortButton.addEventListener("click", () => abort());
 
@@ -80,12 +79,60 @@ function progress(transferred, total, start, now) {
     progressBar.style.width = transferred / total * 100 + "%";
     return now;
 }
-async function transfer(upload) {
+
+class Transfer {
+    requests = [];
+
+    constructor(upload, size, count) {
+        for (let i = 0; i < count; i++) {
+            this.requests.push(queue(upload, size));
+        }
+    }
+
+    abort() {
+        for (let i in this.requests) {
+            this.requests[i].abort();
+        }
+    }
+}
+
+function queue(upload, size) {
+    let request = new XMLHttpRequest();
+    if (upload) {
+        request.open("POST", "http://localhost:8080");
+        request.upload.addEventListener("progress", (e) => {
+            console.log(e);
+        });
+        let buffer = new ArrayBuffer(size);
+        request.send(buffer);
+    } else {
+        request.open("GET", "http://localhost:8080/" + size);
+        request.addEventListener("progress", (e) => {
+            console.log(e);
+        });
+        request.send();
+    }
+    return request;
+}
+
+let transfer = null;
+
+function queueTransfer(upload) {
+    if (transfer !== null) {
+        transfer.abort();
+    }
+    transfer = new Transfer(upload, size, count);
+}
+uploadButton.addEventListener("click", () => queueTransfer(true));
+downloadButton.addEventListener("click", () => queueTransfer(false));
+
+
+async function asdasd(upload) {
     abort();
     let transferred = 0;
     let start = window.performance.now();
     for (let i = 0; i < count; i++) {
-        request = new XMLHttpRequest();
+        let request = new XMLHttpRequest();
         if (upload) {
             request.open("POST", "http://localhost:8080");
         } else {
@@ -131,8 +178,7 @@ async function transfer(upload) {
         }
     }
 }
-uploadButton.addEventListener("click", () => transfer(true));
-downloadButton.addEventListener("click", () => transfer(false));
+
 
 </script>
 </body>
