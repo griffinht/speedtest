@@ -1,7 +1,7 @@
 use std::io::{BufRead, Read, Write};
 
-const SEND_BUFFER_SIZE: usize = 10000; // GET
-const RECEIVE_BUFFER_SIZE: usize = 10000; // POST
+const SEND_BUFFER_SIZE: usize = 65536; // GET
+const RECEIVE_BUFFER_SIZE: usize = 65536; // POST
 
 pub fn listen<A: std::net::ToSocketAddrs>(address: A) -> std::io::Result<()> {
     let listener = std::net::TcpListener::bind(address)?;
