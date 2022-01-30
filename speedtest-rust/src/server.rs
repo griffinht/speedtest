@@ -1,6 +1,6 @@
 use std::io::{BufRead, Read, Write};
 
-const SEND_BUFFER_SIZE: usize = 1; // GET
+const SEND_BUFFER_SIZE: usize = 10000; // GET
 const RECEIVE_BUFFER_SIZE: usize = 10000; // POST
 
 pub fn listen<A: std::net::ToSocketAddrs>(address: A) -> std::io::Result<()> {
@@ -78,8 +78,11 @@ fn handle(stream: std::io::Result<std::net::TcpStream>) -> std::io::Result<()> {
                 writer.write(b"\r\n\r\n")?;
                 let mut write = 0;
                 while write < length {
-                    let mut buffer = [0u8; SEND_BUFFER_SIZE];
-                    let _write = writer.write(&mut buffer)?;
+                    let _write = if (write + SEND_BUFFER_SIZE as u64) < length {
+                        writer.write(&mut [0u8; SEND_BUFFER_SIZE])?
+                    } else {
+                        writer.write(&mut vec![0; (length - write) as usize])?
+                    };
                     if _write == 0 { break; }
                     write = write + _write as u64;
                 }
@@ -93,15 +96,19 @@ fn handle(stream: std::io::Result<std::net::TcpStream>) -> std::io::Result<()> {
                     let length = parse(header.chars().skip(16).collect::<String>())?;
                     let mut read = 0;
                     while read < length {
-                        let mut buffer = [0u8; RECEIVE_BUFFER_SIZE];
-                        let _read = reader.read(&mut buffer)?;
+                        let _read = if (read + RECEIVE_BUFFER_SIZE as u64) < length {
+                            reader.read(&mut [0u8; RECEIVE_BUFFER_SIZE])?
+                        } else {
+                            reader.read(&mut vec![0; (length - read) as usize])?
+                        };
                         if _read == 0 { break; }
                         read = read + _read as u64;
                     }
                     eprintln!("read {}/{}", read, length);
+                    writer.write(b"HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: 0\r\n\r\n")?;
+                    writer.flush()?;
                     break
                 }
-                writer.write(b"HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: 0\r\n\r\n")?;
             },
             _ => {
                 writer.write(b"HTTP/1.1 405 Method Not Allowed\r\n\r\n")?;
