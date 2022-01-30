@@ -7,10 +7,9 @@ pub fn listen<A: std::net::ToSocketAddrs>(address: A) -> std::io::Result<()> {
     let listener = std::net::TcpListener::bind(address)?;
     eprintln!("listening on {}", listener.local_addr().unwrap());
     for stream in listener.incoming() {
-        match handle(stream) {
-            Ok(_) => {}
-            Err(e) => { eprintln!("{}", e); }
-        }
+        std::thread::spawn(move || {
+            handle(stream)
+        });
     }
     Ok(())
 }
