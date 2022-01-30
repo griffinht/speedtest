@@ -76,7 +76,7 @@ function progress(transferred, total, start, now) {
     let speed = (transferred / 1000000) / ((now - start) / 1000); // megabytes per second
     speedOutput.innerText = Math.round(speed * 100) / 100 + " megabytes per second";
     speedOutput2.innerText = Math.round(speed * 8 * 100) / 100 + " megabits per second";
-    progressBar.style.width = size / total * 100 + "%";
+    progressBar.style.width = transferred / total * 100 + "%";
     return now;
 }
 async function transfer(upload, size, count) {
@@ -93,12 +93,15 @@ async function transfer(upload, size, count) {
             request.open("GET", "http://localhost:8080/" + size);
             request.send();
         }
+        function update(loaded) {
+            progress(transferred + loaded, size * count, start, window.performance.now());
+        }
         request.addEventListener("progress", (e) => {
-            progress(transferred + e.loaded, size * count, start, window.performance.now());
+            update(e.loaded);
         });
         request.addEventListener("load", (e) => {
-            progress(transferred + e.loaded, size * count, start, window.performance.now());
-            transferred = transferred + e.total;
+            update(e.loaded);
+            transferred = transferred + e.loaded;
         });
         await new Promise((resolve) => {
             request.addEventListener("load", () => resolve())
