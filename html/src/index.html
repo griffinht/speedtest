@@ -81,7 +81,7 @@ function progress(transferred, total, start) {
 class Transfer {
     requests = [];
 
-    constructor(upload, size, count) {
+    queue(upload, size, count) {
         let start = window.performance.now();
         let transferred = 0;
         let transfer = (transfer) => {
@@ -126,63 +126,12 @@ function queueTransfer(upload) {
     if (transfer !== null) {
         transfer.abort();
     }
-    transfer = new Transfer(upload, size, count);
+    transfer = new Transfer();
+    transfer.queue(upload, size, count);
 }
 uploadButton.addEventListener("click", () => queueTransfer(true));
 downloadButton.addEventListener("click", () => queueTransfer(false));
 
-
-async function asdasd(upload) {
-    abort();
-    let transferred = 0;
-    let start = window.performance.now();
-    for (let i = 0; i < count; i++) {
-        let request = new XMLHttpRequest();
-        if (upload) {
-            request.open("POST", "http://localhost:8080");
-        } else {
-            request.open("GET", "http://localhost:8080/" + size);
-        }
-        function update(loaded, total) {
-            console.log("update", loaded, total);
-            progress(transferred + loaded, transferred + ((count - i) * total), start, window.performance.now());
-        }
-        if (upload) {
-            request.upload.addEventListener("progress", (e) => {
-                update(e.loaded, e.total);
-            })
-        } else {
-            request.addEventListener("progress", (e) => {
-                update(e.loaded, e.total);
-            });
-        }
-
-        if (upload) {
-            let buffer = new ArrayBuffer(size);
-            let promise = new Promise((resolve) => {
-                request.upload.addEventListener("load", (e) => {
-                    transferred = transferred + e.loaded;
-                    resolve();
-                });
-            });
-            console.log(1)
-            request.send(buffer);
-            console.log(2);
-            await promise;
-            console.log(3)
-            console.log(window.performance.now());
-        } else {
-            let promise = new Promise((resolve) => {
-                request.addEventListener("load", (e) => {
-                    transferred = transferred + e.loaded;
-                    resolve();
-                });
-            });
-            request.send();
-            await promise;
-        }
-    }
-}
 
 
 </script>
