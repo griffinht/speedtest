@@ -71,22 +71,25 @@ function abort() {
 }
 abortButton.addEventListener("click", () => abort());
 
-function progress(transferred, total, start, now) {
-    console.log("prog", transferred, total);
-    let speed = (transferred / 1000000) / ((now - start) / 1000); // megabytes per second
+function progress(transferred, total, start) {
+    let speed = (transferred / 1000000) / ((window.performance.now() - start) / 1000); // megabytes per second
     speedOutput.innerText = Math.round(speed * 100) / 100 + " megabytes per second";
     speedOutput2.innerText = Math.round(speed * 8 * 100) / 100 + " megabits per second";
     progressBar.style.width = transferred / total * 100 + "%";
-    return now;
 }
 
 class Transfer {
     requests = [];
-    transferred = 0;
 
     constructor(upload, size, count) {
+        let start = window.performance.now();
+        let transferred = 0;
+        let transfer = (transfer) => {
+            transferred += transfer;
+            progress(transferred, size * count, start);
+        };
         for (let i = 0; i < count; i++) {
-            this.requests.push(this.queue(upload, size));
+            this.requests.push(queue(upload, size, transfer));
         }
     }
 
@@ -95,31 +98,26 @@ class Transfer {
             this.requests[i].abort();
         }
     }
+}
 
-    transfer(transferred) {
-        this.transferred += transferred;
-        console.log(transferred, this.transferred);
+function queue(upload, size, transfer) {
+    let request = new XMLHttpRequest();
+    let loaded = 0;
+    let progress = (e) => {
+        transfer(e.loaded - loaded);
+        loaded = e.loaded;
     }
-
-    queue(upload, size) {
-        let request = new XMLHttpRequest();
-        let loaded = 0;
-        let progress = (e) => {
-            this.transfer(e.loaded - loaded);
-            loaded = e.loaded;
-        }
-        if (upload) {
-            request.open("POST", "http://localhost:8080");
-            request.upload.addEventListener("progress", (e) => progress(e));
-            let buffer = new ArrayBuffer(size);
-            request.send(buffer);
-        } else {
-            request.open("GET", "http://localhost:8080/" + size);
-            request.addEventListener("progress", (e) => progress(e));
-            request.send();
-        }
-        return request;
+    if (upload) {
+        request.open("POST", "http://localhost:8080");
+        request.upload.addEventListener("progress", (e) => progress(e));
+        let buffer = new ArrayBuffer(size);
+        request.send(buffer);
+    } else {
+        request.open("GET", "http://localhost:8080/" + size);
+        request.addEventListener("progress", (e) => progress(e));
+        request.send();
     }
+    return request;
 }
 
 let transfer = null;
