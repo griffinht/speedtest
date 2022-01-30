@@ -80,6 +80,10 @@ function progress(loaded, total, last) {
         speedOutput2.innerText = Math.round(speed * 8 * 100) / 100 + " megabits per second";
     }
     progressBar.style.width = loaded / total * 100 + "%";
+    return {
+        time: now,
+        size: loaded
+    };
 }
 function transfer(upload, size, count, last) {
     abort();
@@ -92,15 +96,15 @@ function transfer(upload, size, count, last) {
         request.open("GET", "http://localhost:8080/" + size);
         request.send();
     }
-    request.addEventListener("progress", (e) => progress(e.loaded, e.total, last));
+    request.addEventListener("progress", (e) => { last = progress(e.loaded, e.total, last); });
     request.addEventListener("load", (e) => {
-        progress(e.loaded, e.total, last)
+        last = progress(e.loaded, e.total, last);
         count = count - 1;
-        if (count > 0) { upload(size, count); }
+        if (count > 0) { transfer(upload, size, count, last); }
     });
 }
 function beginTransfer(upload) {
-    transfer(upload, size, count, { now: window.performance.now(), size: 0 })
+    transfer(upload, size, count, { time: window.performance.now(), size: 0 })
 }
 uploadButton.addEventListener("click", () => beginTransfer(true));
 downloadButton.addEventListener("click", () => beginTransfer(false));
