@@ -1,5 +1,5 @@
 services:
-  speedtest:
-    build: ./speedtest
+  speedtest-rust:
+    build: ./speedtest-rust
     ports:
       - 8080:8080

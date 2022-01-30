@@ -17,7 +17,7 @@ include = [
 ]
 
 [[bin]]
-name = "speedtest"
+name = "speedtest-rust"
 path = "src/main.rs"
 
 [dependencies]
