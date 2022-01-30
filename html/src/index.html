@@ -28,7 +28,8 @@ input[type="range"] {
     <div id="progress">
         <div id="progressBar"></div>
     </div>
-    <p id="speed">0 mb/s</p>
+    <p id="speedOutput">0</p>
+    <p id="speedOutput2">0</p>
 </section>
 <script>
 const payloadRange = document.getElementById("payloadRange");
@@ -37,7 +38,8 @@ const uploadButton = document.getElementById("uploadButton");
 const downloadButton = document.getElementById("downloadButton");
 const abortButton = document.getElementById("abortButton");
 const progressBar = document.getElementById("progressBar");
-const speed = document.getElementById("speed");
+const speedOutput = document.getElementById("speedOutput");
+const speedOutput2 = document.getElementById("speedOutput2");
 payloadRange.addEventListener("input", e => update(e));
 payloadNumber.addEventListener("input", e => update(e));
 
@@ -61,7 +63,9 @@ abortButton.addEventListener("click", () => abort());
 function progress(loaded, total) {
     let now = window.performance.now();
     if (last != null) {
-        speed.innerText = Math.round(((loaded - last.size) / 1000000) / ((now - last.time) / 1000) * 100) / 100 + " megabytes per second";
+        let speed = (loaded - last.size) / (now - last.time) / 1000; // megabytes per second
+        speedOutput.innerText = Math.round(speed * 100) / 100 + " megabytes per second";
+        speedOutput2.innerText = Math.round(speed * 8 * 100) / 100 + " megabits per second";
     }
     last = {
         time: now,
