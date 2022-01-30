@@ -59,6 +59,7 @@ fn handle(stream: std::io::Result<std::net::TcpStream>) -> std::io::Result<()> {
             let header = &header[0..header.len() - 2];
             headers.push(from_utf8(header)?.to_lowercase())
         }
+        let headers = headers;
         let mut keep_alive = false;
         for header in &headers {
             if header.starts_with("connection: keep-alive") { keep_alive = true; break; }
