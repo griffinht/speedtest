@@ -79,7 +79,7 @@ function progress(transferred, total, start, now) {
     progressBar.style.width = transferred / total * 100 + "%";
     return now;
 }
-async function transfer(upload, size, count) {
+async function transfer(upload) {
     abort();
     let transferred = 0;
     let start = window.performance.now();
@@ -93,14 +93,14 @@ async function transfer(upload, size, count) {
             request.open("GET", "http://localhost:8080/" + size);
             request.send();
         }
-        function update(loaded) {
-            progress(transferred + loaded, size * count, start, window.performance.now());
+        function update(e) {
+            progress(transferred + e.loaded, transferred + ((count - i) * e.total), start, window.performance.now());
         }
         request.addEventListener("progress", (e) => {
-            update(e.loaded);
+            update(e);
         });
         request.addEventListener("load", (e) => {
-            update(e.loaded);
+            update(e);
             transferred = transferred + e.loaded;
         });
         await new Promise((resolve) => {
@@ -108,11 +108,8 @@ async function transfer(upload, size, count) {
         });
     }
 }
-function beginTransfer(upload) {
-    transfer(upload, size, count)
-}
-uploadButton.addEventListener("click", () => beginTransfer(true));
-downloadButton.addEventListener("click", () => beginTransfer(false));
+uploadButton.addEventListener("click", () => transfer(true));
+downloadButton.addEventListener("click", () => transfer(false));
 
 </script>
 </body>
