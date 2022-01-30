@@ -1,5 +1,8 @@
 use std::io::{BufRead, Read, Write};
 
+static SEND_BUFFER_SIZE: i32 = 10000; // GET
+static RECEIVE_BUFFER_SIZE: i32 = 10000; // POST
+
 pub fn listen<A: std::net::ToSocketAddrs>(address: A) -> std::io::Result<()> {
     let listener = std::net::TcpListener::bind(address)?;
     eprintln!("listening on {}", listener.local_addr().unwrap());
@@ -69,7 +72,7 @@ fn handle(stream: std::io::Result<std::net::TcpStream>) -> std::io::Result<()> {
             writer.write(b"\r\n\r\n")?;
             let mut write = 0;
             while write < length {
-                let mut buffer = [0u8; 1024];
+                let mut buffer = [0u8; SEND_BUFFER_SIZE];
                 let _write = writer.write(&mut buffer)?;
                 if _write == 0 { break; }
                 write = write + _write as u64;
@@ -83,7 +86,7 @@ fn handle(stream: std::io::Result<std::net::TcpStream>) -> std::io::Result<()> {
                 let length = parse(header.chars().skip(16).collect::<String>())?;
                 let mut read = 0;
                 while read < length {
-                    let mut buffer = [0u8; 1024];
+                    let mut buffer = [0u8; RECEIVE_BUFFER_SIZE];
                     let _read = reader.read(&mut buffer)?;
                     if _read == 0 { break; }
                     read = read + _read as u64;
