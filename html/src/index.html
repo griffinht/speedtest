@@ -20,7 +20,7 @@ input[type="range"] {
 <label>
     <input type="range" id="payloadSizeRange" min="0" max="100000000000" value="0">
     <input type="number" id="payloadSizeNumber">
-    <input type="range" id="payloadCountRange" min="0" max="10000" value="0">
+    <input type="range" id="payloadCountRange" min="1" max="10000" value="0">
     <input type="number" id="payloadCountNumber">
     <input type="button" id="uploadButton" value="Upload">
     <input type="button" id="downloadButton" value="Download">
@@ -50,7 +50,7 @@ const speedOutput = document.getElementById("speedOutput");
 const speedOutput2 = document.getElementById("speedOutput2");
 
 let size = 0;
-let count = 0;
+let count = 1;
 let request = null;
 let last = null;
 
@@ -94,7 +94,8 @@ function upload(size, count) {
     request.addEventListener("progress", (e) => progress(e.loaded, e.total));
     request.addEventListener("load", (e) => {
         progress(e.loaded, e.total)
-        if (count > 0) { upload(size, count - 1); }
+        count = count - 1;
+        if (count > 0) { upload(size, count); }
     });
     request.send(buffer);
 }
@@ -107,7 +108,8 @@ function download(size, count) {
     request.addEventListener("progress", (e) => progress(e.loaded, e.total));
     request.addEventListener("load", (e) => {
         progress(e.loaded, e.total)
-        if (count > 0) { download(size, count - 1); }
+        count = count - 1;
+        if (count > 0) { download(size, count); }
     });
     request.send();
 }
