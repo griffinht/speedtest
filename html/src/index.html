@@ -18,8 +18,10 @@ input[type="range"] {
 </head>
 <body>
 <label>
-    <input type="range" id="payloadRange" min="0" max="100000000000" value="0">
-    <input type="number" id="payloadNumber">
+    <input type="range" id="payloadSizeRange" min="0" max="100000000000" value="0">
+    <input type="number" id="payloadSizeNumber">
+    <input type="range" id="payloadCountRange" min="0" max="10000" value="0">
+    <input type="number" id="payloadCountNumber">
     <input type="button" id="uploadButton" value="Upload">
     <input type="button" id="downloadButton" value="Download">
     <input type="button" id="abortButton" value="Abort">
@@ -32,37 +34,48 @@ input[type="range"] {
     <p id="speedOutput2">0</p>
 </section>
 <script>
-const payloadRange = document.getElementById("payloadRange");
-const payloadNumber = document.getElementById("payloadNumber");
+const payloadSizeRange = document.getElementById("payloadSizeRange");
+payloadSizeRange.addEventListener("input", e => updateSize(e));
+const payloadSizeNumber = document.getElementById("payloadSizeNumber");
+payloadSizeNumber.addEventListener("input", e => updateSize(e));
+const payloadCountRange = document.getElementById("payloadCountRange");
+payloadCountRange.addEventListener("input", e => updateCount(e));
+const payloadCountNumber = document.getElementById("payloadCountNumber");
+payloadCountNumber.addEventListener("input", e => updateCount(e));
 const uploadButton = document.getElementById("uploadButton");
 const downloadButton = document.getElementById("downloadButton");
 const abortButton = document.getElementById("abortButton");
 const progressBar = document.getElementById("progressBar");
 const speedOutput = document.getElementById("speedOutput");
 const speedOutput2 = document.getElementById("speedOutput2");
-payloadRange.addEventListener("input", e => update(e));
-payloadNumber.addEventListener("input", e => update(e));
 
 let size = 0;
+let count = 0;
 let request = null;
 let last = null;
 
-function update(e) {
+function updateSize(e) {
     if (e) { size = parseInt(e.target.value); }
-    payloadRange.value = size;
-    payloadNumber.value = size;
+    payloadSizeRange.value = size;
+    payloadSizeNumber.value = size;
 }
-update();
+updateSize();
+
+function updateCount(e) {
+    if (e) { count = parseInt(e.target.value); }
+    payloadCountRange.value = count;
+    payloadCountNumber.value = count;
+}
+updateCount();
 
 function abort() {
     if (request != null) { request.abort(); request = null; }
-    last = null;
 }
 abortButton.addEventListener("click", () => abort());
 
 function progress(loaded, total) {
     let now = window.performance.now();
-    if (last != null) {
+    if (last != null && last.size !== loaded) {
         let speed = (loaded - last.size) / (now - last.time) / 1000; // megabytes per second
         speedOutput.innerText = Math.round(speed * 100) / 100 + " megabytes per second";
         speedOutput2.innerText = Math.round(speed * 8 * 100) / 100 + " megabits per second";
@@ -73,30 +86,26 @@ function progress(loaded, total) {
     };
     progressBar.style.width = loaded / total * 100 + "%";
 }
-function upload(size) {
+function upload(size, count) {
     abort();
     request = new XMLHttpRequest();
     request.open("POST", "http://localhost:8080");
     let buffer = new ArrayBuffer(size);
-    request.send(buffer);
-    request.addEventListener("load", (e) => {
-        console.log(e);
-    });
+    request.addEventListener("load", (e) => progress(e.loaded, e.total));
     request.addEventListener("progress", (e) => progress(e.loaded, e.total));
+    request.send(buffer);
 }
-uploadButton.addEventListener("click", () => upload(size));
+uploadButton.addEventListener("click", () => upload(size, count));
 
-function download(size) {
+function download(size, count) {
     abort();
     request = new XMLHttpRequest();
     request.open("GET", "http://localhost:8080/" + size);
-    request.send();
-    request.addEventListener("load", (e) => {
-        console.log(e);
-    });
+    request.addEventListener("load", (e) => progress(e.loaded, e.total));
     request.addEventListener("progress", (e) => progress(e.loaded, e.total));
+    request.send();
 }
-downloadButton.addEventListener("click", () => download(size));
+downloadButton.addEventListener("click", () => download(size, count));
 </script>
 </body>
 </html>
