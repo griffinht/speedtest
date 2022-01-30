@@ -52,7 +52,6 @@ const speedOutput2 = document.getElementById("speedOutput2");
 let size = 0;
 let count = 1;
 let request = null;
-let last = null;
 
 function updateSize(e) {
     if (e) { size = parseInt(e.target.value); }
@@ -73,47 +72,39 @@ function abort() {
 }
 abortButton.addEventListener("click", () => abort());
 
-function progress(loaded, total) {
+function progress(loaded, total, last) {
     let now = window.performance.now();
-    if (last != null && last.size !== loaded) {
+    if (last.size !== loaded) {
         let speed = (loaded - last.size) / (now - last.time) / 1000; // megabytes per second
         speedOutput.innerText = Math.round(speed * 100) / 100 + " megabytes per second";
         speedOutput2.innerText = Math.round(speed * 8 * 100) / 100 + " megabits per second";
     }
-    last = {
-        time: now,
-        size: loaded
-    };
     progressBar.style.width = loaded / total * 100 + "%";
 }
-function upload(size, count) {
+function transfer(upload, size, count, last) {
     abort();
     request = new XMLHttpRequest();
-    request.open("POST", "http://localhost:8080");
-    let buffer = new ArrayBuffer(size);
-    request.addEventListener("progress", (e) => progress(e.loaded, e.total));
+    if (upload) {
+        request.open("POST", "http://localhost:8080");
+        let buffer = new ArrayBuffer(size);
+        request.send(buffer);
+    } else {
+        request.open("GET", "http://localhost:8080/" + size);
+        request.send();
+    }
+    request.addEventListener("progress", (e) => progress(e.loaded, e.total, last));
     request.addEventListener("load", (e) => {
-        progress(e.loaded, e.total)
+        progress(e.loaded, e.total, last)
         count = count - 1;
         if (count > 0) { upload(size, count); }
     });
-    request.send(buffer);
 }
-uploadButton.addEventListener("click", () => upload(size, count));
+function beginTransfer(upload) {
+    transfer(upload, size, count, { now: window.performance.now(), size: 0 })
+}
+uploadButton.addEventListener("click", () => beginTransfer(true));
+downloadButton.addEventListener("click", () => beginTransfer(false));
 
-function download(size, count) {
-    abort();
-    request = new XMLHttpRequest();
-    request.open("GET", "http://localhost:8080/" + size);
-    request.addEventListener("progress", (e) => progress(e.loaded, e.total));
-    request.addEventListener("load", (e) => {
-        progress(e.loaded, e.total)
-        count = count - 1;
-        if (count > 0) { download(size, count); }
-    });
-    request.send();
-}
-downloadButton.addEventListener("click", () => download(size, count));
 </script>
 </body>
 </html>
