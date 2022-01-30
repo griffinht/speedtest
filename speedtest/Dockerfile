@@ -1,6 +1,6 @@
 FROM rust as build
 
-COPY speedtest .
+COPY . .
 RUN cargo build --release && ln -s $(cd ./target/release; pwd)/speedtest /speedtest
 
 FROM gcr.io/distroless/cc
