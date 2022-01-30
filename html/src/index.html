@@ -91,8 +91,11 @@ function upload(size, count) {
     request = new XMLHttpRequest();
     request.open("POST", "http://localhost:8080");
     let buffer = new ArrayBuffer(size);
-    request.addEventListener("load", (e) => progress(e.loaded, e.total));
     request.addEventListener("progress", (e) => progress(e.loaded, e.total));
+    request.addEventListener("load", (e) => {
+        progress(e.loaded, e.total)
+        if (count > 0) { upload(size, count - 1); }
+    });
     request.send(buffer);
 }
 uploadButton.addEventListener("click", () => upload(size, count));
@@ -101,8 +104,11 @@ function download(size, count) {
     abort();
     request = new XMLHttpRequest();
     request.open("GET", "http://localhost:8080/" + size);
-    request.addEventListener("load", (e) => progress(e.loaded, e.total));
     request.addEventListener("progress", (e) => progress(e.loaded, e.total));
+    request.addEventListener("load", (e) => {
+        progress(e.loaded, e.total)
+        if (count > 0) { download(size, count - 1); }
+    });
     request.send();
 }
 downloadButton.addEventListener("click", () => download(size, count));
