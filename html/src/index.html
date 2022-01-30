@@ -5,6 +5,15 @@
 input[type="range"] {
     width: 100%;
 }
+#progress {
+    width: 100%;
+    border-style: solid;
+}
+#progressBar {
+    width: 1%;
+    background-color: black;
+    height: 30px;
+}
     </style>
 </head>
 <body>
@@ -17,7 +26,7 @@ input[type="range"] {
 </label>
 <section>
     <div id="progress">
-        <div id="progressbar"></div>
+        <div id="progressBar"></div>
     </div>
     <p id="speed">3456</p>
 </section>
@@ -27,6 +36,7 @@ const payloadNumber = document.getElementById("payloadNumber");
 const uploadButton = document.getElementById("uploadButton");
 const downloadButton = document.getElementById("downloadButton");
 const abortButton = document.getElementById("abortButton");
+const progressBar = document.getElementById("progressBar");
 payloadRange.addEventListener("input", e => update(e));
 payloadNumber.addEventListener("input", e => update(e));
 
@@ -45,6 +55,9 @@ function abort() {
 }
 abortButton.addEventListener("click", () => abort());
 
+function progress(e) {
+    progressBar.style.width = e.loaded / e.total * 100 + "%";
+}
 function upload(size) {
     abort();
     request = new XMLHttpRequest();
@@ -54,9 +67,7 @@ function upload(size) {
     request.addEventListener("load", (e) => {
         console.log(e);
     });
-    request.addEventListener("progress", (e) => {
-        console.log(e);
-    });
+    request.addEventListener("progress", (e) => progress(e));
 }
 uploadButton.addEventListener("click", () => upload(size));
 
