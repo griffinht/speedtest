@@ -67,7 +67,7 @@ function updateCount(e) {
 updateCount();
 
 function abort() {
-
+    if (transfer !== null) { transfer.abort(); transfer = null; }
 }
 abortButton.addEventListener("click", () => abort());
 
@@ -123,9 +123,7 @@ function queue(upload, size, transfer) {
 let transfer = null;
 
 function queueTransfer(upload) {
-    if (transfer !== null) {
-        transfer.abort();
-    }
+    abort();
     transfer = new Transfer();
     transfer.queue(upload, size, count);
 }
