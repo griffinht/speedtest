@@ -73,6 +73,7 @@ function abort() {
 abortButton.addEventListener("click", () => abort());
 
 function progress(transferred, total, start, now) {
+    console.log("prog", transferred, total);
     let speed = (transferred / 1000000) / ((now - start) / 1000); // megabytes per second
     speedOutput.innerText = Math.round(speed * 100) / 100 + " megabytes per second";
     speedOutput2.innerText = Math.round(speed * 8 * 100) / 100 + " megabits per second";
@@ -91,26 +92,43 @@ async function transfer(upload) {
             request.open("GET", "http://localhost:8080/" + size);
         }
         function update(loaded, total) {
+            console.log("update", loaded, total);
             progress(transferred + loaded, transferred + ((count - i) * total), start, window.performance.now());
         }
-        request.addEventListener("progress", (e) => {
-            if (!upload) { update(e.loaded, e.total); }
-        });
-        request.upload.addEventListener("progress", (e) => {
-            update(e.loaded, e.total);
-        })
-        request.addEventListener("load", (e) => {
-            transferred = transferred + e.loaded;
-        });
+        if (upload) {
+            request.upload.addEventListener("progress", (e) => {
+                update(e.loaded, e.total);
+            })
+        } else {
+            request.addEventListener("progress", (e) => {
+                update(e.loaded, e.total);
+            });
+        }
+
         if (upload) {
             let buffer = new ArrayBuffer(size);
+            let promise = new Promise((resolve) => {
+                request.upload.addEventListener("load", (e) => {
+                    transferred = transferred + e.loaded;
+                    resolve();
+                });
+            });
+            console.log(1)
             request.send(buffer);
+            console.log(2);
+            await promise;
+            console.log(3)
+            console.log(window.performance.now());
         } else {
+            let promise = new Promise((resolve) => {
+                request.addEventListener("load", (e) => {
+                    transferred = transferred + e.loaded;
+                    resolve();
+                });
+            });
             request.send();
+            await promise;
         }
-        await new Promise((resolve) => {
-            request.addEventListener("load", () => resolve())
-        });
     }
 }
 uploadButton.addEventListener("click", () => transfer(true));
