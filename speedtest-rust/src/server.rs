@@ -70,6 +70,7 @@ fn handle(stream: std::io::Result<std::net::TcpStream>) -> std::io::Result<()> {
         match protocol {
             b"OPTIONS" => {
                 writer.write(b"HTTP/1.1 204 No Content\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Headers: *\r\nAccess-Control-Allow-Methods: POST, GET\r\n\r\n")?;
+                writer.flush()?;
             }
             b"GET" => {
                 let length = parse::<u64>(target.chars().skip(1).collect::<String>())?;
