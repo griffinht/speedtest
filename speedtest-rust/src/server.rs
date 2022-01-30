@@ -1,6 +1,6 @@
 use std::io::{BufRead, Read, Write};
 
-const SEND_BUFFER_SIZE: usize = 10000; // GET
+const SEND_BUFFER_SIZE: usize = 1; // GET
 const RECEIVE_BUFFER_SIZE: usize = 10000; // POST
 
 pub fn listen<A: std::net::ToSocketAddrs>(address: A) -> std::io::Result<()> {
@@ -83,6 +83,7 @@ fn handle(stream: std::io::Result<std::net::TcpStream>) -> std::io::Result<()> {
                     if _write == 0 { break; }
                     write = write + _write as u64;
                 }
+                writer.flush()?;
                 eprintln!("wrote {}/{}", write, length);
             },
             b"POST" => {
