@@ -18,7 +18,7 @@ input[type="range"] {
 </head>
 <body>
 <label>
-    <input type="range" id="payloadRange" min="0" max="999999999" value="100000">
+    <input type="range" id="payloadRange" min="0" max="100000000000" value="0">
     <input type="number" id="payloadNumber">
     <input type="button" id="uploadButton" value="Upload">
     <input type="button" id="downloadButton" value="Download">
@@ -54,13 +54,14 @@ update();
 
 function abort() {
     if (request != null) { request.abort(); request = null; }
+    last = null;
 }
 abortButton.addEventListener("click", () => abort());
 
 function progress(loaded, total) {
     let now = window.performance.now();
     if (last != null) {
-        speed.innerText = Math.round(((loaded - last.size) / 1000000) / ((now - last.time) / 1000000) * 100) / 100 + " megabytes per second";
+        speed.innerText = Math.round(((loaded - last.size) / 1000000) / ((now - last.time) / 1000) * 100) / 100 + " megabytes per second";
     }
     last = {
         time: now,
