@@ -87,22 +87,27 @@ async function transfer(upload) {
         request = new XMLHttpRequest();
         if (upload) {
             request.open("POST", "http://localhost:8080");
+        } else {
+            request.open("GET", "http://localhost:8080/" + size);
+        }
+        function update(loaded, total) {
+            progress(transferred + loaded, transferred + ((count - i) * total), start, window.performance.now());
+        }
+        request.addEventListener("progress", (e) => {
+            if (!upload) { update(e.loaded, e.total); }
+        });
+        request.upload.addEventListener("progress", (e) => {
+            update(e.loaded, e.total);
+        })
+        request.addEventListener("load", (e) => {
+            transferred = transferred + e.loaded;
+        });
+        if (upload) {
             let buffer = new ArrayBuffer(size);
             request.send(buffer);
         } else {
-            request.open("GET", "http://localhost:8080/" + size);
             request.send();
         }
-        function update(e) {
-            progress(transferred + e.loaded, transferred + ((count - i) * e.total), start, window.performance.now());
-        }
-        request.addEventListener("progress", (e) => {
-            update(e);
-        });
-        request.addEventListener("load", (e) => {
-            update(e);
-            transferred = transferred + e.loaded;
-        });
         await new Promise((resolve) => {
             request.addEventListener("load", () => resolve())
         });
