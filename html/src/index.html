@@ -28,7 +28,7 @@ input[type="range"] {
     <div id="progress">
         <div id="progressBar"></div>
     </div>
-    <p id="speed">3456</p>
+    <p id="speed">0 mb/s</p>
 </section>
 <script>
 const payloadRange = document.getElementById("payloadRange");
@@ -37,11 +37,13 @@ const uploadButton = document.getElementById("uploadButton");
 const downloadButton = document.getElementById("downloadButton");
 const abortButton = document.getElementById("abortButton");
 const progressBar = document.getElementById("progressBar");
+const speed = document.getElementById("speed");
 payloadRange.addEventListener("input", e => update(e));
 payloadNumber.addEventListener("input", e => update(e));
 
 let size = 0;
 let request = null;
+let last = null;
 
 function update(e) {
     if (e) { size = parseInt(e.target.value); }
@@ -55,8 +57,16 @@ function abort() {
 }
 abortButton.addEventListener("click", () => abort());
 
-function progress(e) {
-    progressBar.style.width = e.loaded / e.total * 100 + "%";
+function progress(loaded, total) {
+    let now = window.performance.now();
+    if (last != null) {
+        speed.innerText = Math.round(((loaded - last.size) / 1000000) / ((now - last.time) / 1000000) * 100) / 100 + " megabytes per second";
+    }
+    last = {
+        time: now,
+        size: loaded
+    };
+    progressBar.style.width = loaded / total * 100 + "%";
 }
 function upload(size) {
     abort();
@@ -67,7 +77,7 @@ function upload(size) {
     request.addEventListener("load", (e) => {
         console.log(e);
     });
-    request.addEventListener("progress", (e) => progress(e));
+    request.addEventListener("progress", (e) => progress(e.loaded, e.total));
 }
 uploadButton.addEventListener("click", () => upload(size));
 
@@ -79,7 +89,7 @@ function download(size) {
     request.addEventListener("load", (e) => {
         console.log(e);
     });
-    request.addEventListener("progress", (e) => progress(e));
+    request.addEventListener("progress", (e) => progress(e.loaded, e.total));
 }
 downloadButton.addEventListener("click", () => download(size));
 </script>
