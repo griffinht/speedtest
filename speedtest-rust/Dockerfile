@@ -7,4 +7,4 @@ FROM gcr.io/distroless/cc
 
 COPY --from=build /speedtest-rust /usr/local/bin/speedtest-rust
 
-ENTRYPOINT ["speedtest"]
+ENTRYPOINT ["speedtest-rust"]
