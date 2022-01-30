@@ -82,10 +82,11 @@ function progress(transferred, total, start, now) {
 
 class Transfer {
     requests = [];
+    transferred = 0;
 
     constructor(upload, size, count) {
         for (let i = 0; i < count; i++) {
-            this.requests.push(queue(upload, size));
+            this.requests.push(this.queue(upload, size));
         }
     }
 
@@ -94,25 +95,31 @@ class Transfer {
             this.requests[i].abort();
         }
     }
-}
 
-function queue(upload, size) {
-    let request = new XMLHttpRequest();
-    if (upload) {
-        request.open("POST", "http://localhost:8080");
-        request.upload.addEventListener("progress", (e) => {
-            console.log(e);
-        });
-        let buffer = new ArrayBuffer(size);
-        request.send(buffer);
-    } else {
-        request.open("GET", "http://localhost:8080/" + size);
-        request.addEventListener("progress", (e) => {
-            console.log(e);
-        });
-        request.send();
+    transfer(transferred) {
+        this.transferred += transferred;
+        console.log(transferred, this.transferred);
     }
-    return request;
+
+    queue(upload, size) {
+        let request = new XMLHttpRequest();
+        let loaded = 0;
+        let progress = (e) => {
+            this.transfer(e.loaded - loaded);
+            loaded = e.loaded;
+        }
+        if (upload) {
+            request.open("POST", "http://localhost:8080");
+            request.upload.addEventListener("progress", (e) => progress(e));
+            let buffer = new ArrayBuffer(size);
+            request.send(buffer);
+        } else {
+            request.open("GET", "http://localhost:8080/" + size);
+            request.addEventListener("progress", (e) => progress(e));
+            request.send();
+        }
+        return request;
+    }
 }
 
 let transfer = null;
